@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  firstName String
+  lastName  String
+  role      Role      @default(USER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  leads     Lead[]
+  accounts  Account[]
+  contacts  Contact[]
+
+  @@map("users")
+}
+
+model Lead {
+  id          Int       @id @default(autoincrement())
+  name        String
+  email       String?
+  phone       String?
+  company     String?
+  status      LeadStatus @default(NEW)
+  source      LeadSource
+  assignedTo  User      @relation(fields: [assignedToId], references: [id])
+  assignedToId Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  notes       Note[]
+  account     Account?   @relation(fields: [accountId], references: [id])
+  accountId   Int?
+  contact     Contact?  @relation(fields: [contactId], references: [id])
+  contactId   Int?
+
+  @@map("leads")
+}
+
+model Account {
+  id          Int       @id @default(autoincrement())
+  name        String
+  website     String?
+  industry    String?
+  employees   Int?
+  phone       String?
+  address     String?
+  city        String?
+  state       String?
+  zip         String?
+  country     String?
+  assignedTo  User      @relation(fields: [assignedToId], references: [id])
+  assignedToId Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  leads       Lead[]
+  contacts    Contact[]
+
+  @@map("accounts")
+}
+
+model Contact {
+  id          Int       @id @default(autoincrement())
+  firstName   String
+  lastName    String
+  email       String
+  phone       String?
+  title       String?
+  account     Account   @relation(fields: [accountId], references: [id])
+  accountId   Int
+  lead        Lead?     @relation(fields: [leadId], references: [id])
+  leadId      Int?
+  assignedTo  User      @relation(fields: [assignedToId], references: [id])
+  assignedToId Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("contacts")
+}
+
+model Note {
+  id        Int      @id @default(autoincrement())
+  text      String
+  lead      Lead     @relation(fields: [leadId], references: [id])
+  leadId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("notes")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum LeadStatus {
+  NEW
+  QUALIFIED
+  UNQUALIFIED
+  IN_PROGRESS
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+enum LeadSource {
+  WEBSITE
+  REFERRAL
+  SOCIAL_MEDIA
+  EMAIL_CAMPAIGN
+  EVENT
+  OTHER
+}
