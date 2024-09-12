@@ -1,0 +1,360 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useRouter } from 'next/navigation';
+import { LoginForm, RegisterForm } from '@/components/Auth';
+import { loginUser, registerUser } from '@/store/slices/authSlice';
+import { RootState } from '@/store';
+
+const AuthPage = () => {
+  const [isLogin, setIsLogin] = useState(true);
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const { user, isLoading, error } = useSelector((state: RootState) => state.auth);
+
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
+
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      await dispatch(loginUser({ email, password }));
+    } catch (err) {
+      console.error('Login error:', err);
+    }
+  };
+
+  const handleRegister = async (name: string, email: string, password: string) => {
+    try {
+      await dispatch(registerUser({ name, email, password }));
+    } catch (err) {
+      console.error('Registration error:', err);
+    }
+  };
+
+  return (
+    <div className="flex justify-center items-center h-screen bg-gray-100">
+      <div className="bg-white rounded-lg shadow-md p-8 max-w-md w-full">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">SalesLoop</h1>
+          <p className="text-gray-600">
+            {isLogin ? 'Login to your account' : 'Create a new account'}
+          </p>
+        </div>
+        {isLogin ? (
+          <LoginForm onSubmit={handleLogin} isLoading={isLoading} error={error} />
+        ) : (
+          <RegisterForm onSubmit={handleRegister} isLoading={isLoading} error={error} />
+        )}
+        <div className="mt-6 text-center">
+          <span className="text-gray-600">
+            {isLogin ? "Don't have an account?" : 'Already have an account?'}
+          </span>
+          <button
+            className="text-blue-600 hover:text-blue-800 font-semibold ml-2"
+            onClick={() => setIsLogin(!isLogin)}
+          >
+            {isLogin ? 'Register' : 'Login'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AuthPage;
+```
+
+```tsx
+'use client';
+
+import React, { useState } from 'react';
+import { FaEnvelope, FaLock } from 'react-icons/fa';
+import { Spinner, Button } from '@/components/UI';
+
+interface LoginFormProps {
+  onSubmit: (email: string, password: string) => void;
+  isLoading: boolean;
+  error: string | null;
+}
+
+const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isLoading, error }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(email, password);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div className="mb-4">
+        <div className="flex items-center border border-gray-300 rounded-md px-3 py-2">
+          <FaEnvelope className="text-gray-500 mr-2" />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="flex-grow outline-none border-none"
+            required
+          />
+        </div>
+      </div>
+      <div className="mb-4">
+        <div className="flex items-center border border-gray-300 rounded-md px-3 py-2">
+          <FaLock className="text-gray-500 mr-2" />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="flex-grow outline-none border-none"
+            required
+          />
+        </div>
+      </div>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+      <Button type="submit" disabled={isLoading}>
+        {isLoading ? <Spinner /> : 'Login'}
+      </Button>
+    </form>
+  );
+};
+
+export default LoginForm;
+```
+
+```tsx
+'use client';
+
+import React, { useState } from 'react';
+import { FaUser, FaEnvelope, FaLock } from 'react-icons/fa';
+import { Spinner, Button } from '@/components/UI';
+
+interface RegisterFormProps {
+  onSubmit: (name: string, email: string, password: string) => void;
+  isLoading: boolean;
+  error: string | null;
+}
+
+const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit, isLoading, error }) => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(name, email, password);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div className="mb-4">
+        <div className="flex items-center border border-gray-300 rounded-md px-3 py-2">
+          <FaUser className="text-gray-500 mr-2" />
+          <input
+            type="text"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="flex-grow outline-none border-none"
+            required
+          />
+        </div>
+      </div>
+      <div className="mb-4">
+        <div className="flex items-center border border-gray-300 rounded-md px-3 py-2">
+          <FaEnvelope className="text-gray-500 mr-2" />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="flex-grow outline-none border-none"
+            required
+          />
+        </div>
+      </div>
+      <div className="mb-4">
+        <div className="flex items-center border border-gray-300 rounded-md px-3 py-2">
+          <FaLock className="text-gray-500 mr-2" />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="flex-grow outline-none border-none"
+            required
+          />
+        </div>
+      </div>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+      <Button type="submit" disabled={isLoading}>
+        {isLoading ? <Spinner /> : 'Register'}
+      </Button>
+    </form>
+  );
+};
+
+export default RegisterForm;
+```
+
+```tsx
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { AuthService } from '@/services/auth.service';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+interface AuthState {
+  user: User | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
+const initialState: AuthState = {
+  user: null,
+  isLoading: false,
+  error: null,
+};
+
+export const loginUser = createAsyncThunk(
+  'auth/login',
+  async (credentials: { email: string; password: string }, thunkAPI) => {
+    try {
+      const user = await AuthService.login(credentials.email, credentials.password);
+      return user;
+    } catch (err) {
+      return thunkAPI.rejectWithValue('Invalid email or password');
+    }
+  }
+);
+
+export const registerUser = createAsyncThunk(
+  'auth/register',
+  async (userData: { name: string; email: string; password: string }, thunkAPI) => {
+    try {
+      const user = await AuthService.register(userData.name, userData.email, userData.password);
+      return user;
+    } catch (err) {
+      return thunkAPI.rejectWithValue('Failed to register user');
+    }
+  }
+);
+
+const authSlice = createSlice({
+  name: 'auth',
+  initialState,
+  reducers: {
+    logout: (state) => {
+      state.user = null;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(loginUser.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(loginUser.fulfilled, (state, action: PayloadAction<User>) => {
+        state.isLoading = false;
+        state.user = action.payload;
+      })
+      .addCase(loginUser.rejected, (state, action: PayloadAction<string>) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      .addCase(registerUser.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(registerUser.fulfilled, (state, action: PayloadAction<User>) => {
+        state.isLoading = false;
+        state.user = action.payload;
+      })
+      .addCase(registerUser.rejected, (state, action: PayloadAction<string>) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      });
+  },
+});
+
+export const { logout } = authSlice.actions;
+export default authSlice.reducer;
+```
+
+```tsx
+import { User } from '@/types';
+
+const users: User[] = []; // In-memory storage for demonstration purposes
+
+export const AuthService = {
+  login: async (email: string, password: string): Promise<User> => {
+    const user = users.find((u) => u.email === email && u.password === password);
+    if (!user) {
+      throw new Error('Invalid email or password');
+    }
+    return user;
+  },
+
+  register: async (name: string, email: string, password: string): Promise<User> => {
+    const existingUser = users.find((u) => u.email === email);
+    if (existingUser) {
+      throw new Error('Email already registered');
+    }
+    const newUser: User = { id: String(users.length + 1), name, email, password };
+    users.push(newUser);
+    return newUser;
+  },
+};
+```
+
+```tsx
+'use client';
+
+import React, { ButtonHTMLAttributes } from 'react';
+import { Spinner } from './Spinner';
+
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  isLoading?: boolean;
+}
+
+const Button: React.FC<ButtonProps> = ({ children, isLoading, disabled, ...rest }) => {
+  return (
+    <button
+      disabled={disabled || isLoading}
+      className={`px-4 py-2 rounded-md font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 ${
+        disabled || isLoading ? 'opacity-50 cursor-not-allowed' : ''
+      }`}
+      {...rest}
+    >
+      {isLoading ? <Spinner /> : children}
+    </button>
+  );
+};
+
+export default Button;
+```
+
+```tsx
+'use client';
+
+import React from 'react';
+
+const Spinner: React.FC = () => {
+  return (
+    <div className="flex items-center justify-center">
+      <div className="w-6 h-6 border-2 border-blue-600 border-solid rounded-full animate-spin border-r-transparent"></div>
+    </div>
+  );
+};
+
+export default Spinner;
